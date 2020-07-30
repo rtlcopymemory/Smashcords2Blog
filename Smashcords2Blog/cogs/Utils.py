@@ -18,6 +18,10 @@ class Utils(commands.Cog):
     async def on_guild_join(self, guild: discord.Guild):
         server.add_server(self.bot.conn, guild.id, guild.name)
 
+    @commands.Cog.listener()
+    async def on_guild_leave(self, guild: discord.Guild):
+        server.remove_server(self.bot.conn, guild.id)
+
     @commands.command(name='ping')
     async def ping(self, ctx: commands.Context, *, member: discord.Member = None):
         member = member or ctx.author

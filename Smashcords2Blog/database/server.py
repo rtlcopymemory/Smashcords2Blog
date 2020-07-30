@@ -15,3 +15,10 @@ def add_server(conn, server_id: int, server_name: str, server_invite: str = None
         curr.execute("INSERT INTO smashcords2blog.server (serverid, name) VALUES (%s, %s)", (server_id, server_name))
     conn.commit()
     curr.close()
+
+
+def remove_server(conn, server_id: int):
+    curr = conn.cursor()
+    curr.execute("DELETE FROM smashcords2blog.server WHERE serverid = %s", (server_id,))
+    conn.commit()
+    curr.close()
