@@ -2,12 +2,13 @@
 ### Terminology
 - `A^B` => Column `A` references table `B`
 - `A_o` => Column is optional
-- <span style="text-decoration: underline">A</span> => key
+- **A** => key
 
 ### Schema
-- Server(<span style="text-decoration: underline">serverID</span>, name_o, inviteLink_o)
-- Category(<span style="text-decoration: underline">serverID^Server, catName</span>)
-- Post(<span style="text-decoration: underline">serverID^Category, catName^Category, title</span>, subtitle, content, credits)
+- Server(**serverID**, name_o, inviteLink_o)
+- Category(**serverID^Server, catName**)
+- Post(**serverID^Category, catName^Category, title**, subtitle, content, credits)
+- Role(**serverID^Server, roleID**)
 
 ### Attribute Domains
 - Server
@@ -23,3 +24,6 @@
   - title = VARCHAR(64)
   - subtitle = VARCHAR(128)
   - content = TEXT
+- Category
+  - serverID = NUMERIC
+  - roleID = NUMERIC
