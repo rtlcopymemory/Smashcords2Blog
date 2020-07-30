@@ -58,5 +58,13 @@ class PermissionsManager(commands.Cog):
         await ctx.send(message[:-2])
 
     @commands.command(name='revoke')
+    @commands.is_owner()
     async def revoke(self, ctx: commands.Context):
-        pass
+        guild: discord.Guild = ctx.guild
+        removed: str = ""
+        roles_list: list = roles_from_context(ctx)
+        role: discord.Role
+        for role in roles_list:
+            roles.remove_role(self.bot.conn, guild.id, role.id)
+            removed += " " + role.name
+        await ctx.send("Removed the following roles:\n`{}`".format(removed))
