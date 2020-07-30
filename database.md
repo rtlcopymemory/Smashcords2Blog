@@ -5,7 +5,7 @@
 - <span style="text-decoration: underline">A</span> => key
 
 ### Schema
-- Server(<span style="text-decoration: underline">serverID</span>, name_o, inviteLink)
+- Server(<span style="text-decoration: underline">serverID</span>, name_o, inviteLink_o)
 - Category(<span style="text-decoration: underline">serverID^Server, catName</span>)
 - Post(<span style="text-decoration: underline">serverID^Category, catName^Category, title</span>, subtitle, content, credits)
 
