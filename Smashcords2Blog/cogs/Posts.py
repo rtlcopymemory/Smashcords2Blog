@@ -20,7 +20,7 @@ class Posts(commands.Cog):
             await ctx.send("You're not a mod")
             return
         self.temp_posts[ctx.guild.id] = discord.Embed(color=discord.Color.from_rgb(106, 252, 228))
-        await ctx.send("New post initiated")
+        await ctx.send("New post initiated\nSet up a **title**, the **content** and then **public** it to a category!")
 
     @commands.command(name='createcategory', usage="name",
                       brief="Creates a new category",
