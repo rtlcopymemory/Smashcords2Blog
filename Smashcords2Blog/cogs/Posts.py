@@ -80,6 +80,11 @@ class Posts(commands.Cog):
         self.temp_posts[ctx.guild.id][0].title = ' '.join(args)
         await ctx.send("Post edited", embed=self.temp_posts[ctx.guild.id][0])
 
+    @title.error
+    async def title_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
+        if isinstance(error.original, KeyError):
+            await ctx.send("Please, create the post first using the `new` command")
+
     @commands.command(name='setcontent', usage="message IDs",
                       brief="Sets the content of the post",
                       descrition="Accepts multiple IDs at once, they need to be in order from top to bottom",
