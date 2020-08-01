@@ -1,3 +1,5 @@
+import typing
+
 import discord
 import psycopg2
 from discord.ext import commands
@@ -10,7 +12,7 @@ from database import categories
 class Posts(commands.Cog):
     def __init__(self, bot):
         self.bot: Smashcords2BlogBot = bot
-        self.temp_posts: dict = {}  # Dictionary mapping server id -> current embed
+        self.temp_posts: typing.Dict[int, discord.Embed] = {}  # Dictionary mapping server id -> current embed
 
     @commands.command(name='newpost', usage="",
                       brief="Initiates a new post",
@@ -65,3 +67,13 @@ class Posts(commands.Cog):
             return
         categories.remove_category(self.bot.conn, ctx.guild.id, arg)
         await ctx.send("Category `{}` successfully removed".format(arg))
+
+    @commands.command(name='title', usage="name",
+                      brief="Removes a category",
+                      aliases=['settitle'])
+    async def title(self, ctx: commands.Context, *args: str):
+        if not is_mod(self.bot.conn, ctx):
+            await ctx.send("You're not a mod")
+            return
+        self.temp_posts[ctx.guild.id].title = ' '.join(args)
+        await ctx.send("Post edited", embed=self.temp_posts[ctx.guild.id])
