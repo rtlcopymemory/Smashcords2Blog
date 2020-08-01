@@ -12,7 +12,8 @@ class Utils(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("Connected!\nUsername: {}".format(self.bot.user.name))
-        await self.bot.change_presence(activity=discord.CustomActivity("Prefix: $"))
+        await self.bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.watching, name="$help for a list of commands"))
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
