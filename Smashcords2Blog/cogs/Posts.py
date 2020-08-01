@@ -1,5 +1,6 @@
 import os
 import typing
+from pathlib import Path
 
 import discord
 import psycopg2
@@ -7,11 +8,12 @@ from discord.ext import commands
 
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
-from database import categories
+from database import categories, posts
 
 
-def create_md_file(path, title, subtitle, content):
-    with open(path, "w+") as f:
+def create_md_file(path, filename, title, subtitle, content):
+    Path("{}".format(path)).mkdir(parents=True, exist_ok=True)
+    with open("{}/{}".format(path, filename), "w+") as f:
         f.write("# {}\n".format(title))
         f.write("## {}\n".format(subtitle))
         f.write(content)
@@ -24,9 +26,7 @@ class Posts(commands.Cog):
         # and the list of messages it references
         self.temp_posts: typing.Dict[int, typing.Tuple[discord.Embed, typing.List[discord.Message]]] = {}
 
-    @commands.command(name='newpost', usage="",
-                      brief="Initiates a new post",
-                      aliases=['new'])
+    @commands.command(name='newpost', usage="", brief="Initiates a new post", aliases=['new'])
     async def create_embed(self, ctx: commands.Context):
         if not is_mod(self.bot.conn, ctx):
             await ctx.send("You're not a mod")
@@ -34,8 +34,7 @@ class Posts(commands.Cog):
         self.temp_posts[ctx.guild.id] = (discord.Embed(color=discord.Color.from_rgb(106, 252, 228)), [])
         await ctx.send("New post initiated\nSet up a **title**, the **content** and then **public** it to a category!")
 
-    @commands.command(name='createcategory', usage="name",
-                      brief="Creates a new category",
+    @commands.command(name='createcategory', usage="name", brief="Creates a new category",
                       aliases=['newcategory', 'newcat', 'addcat', 'addcategory'])
     async def create_category(self, ctx: commands.Context, *args: str):
         if not is_mod(self.bot.conn, ctx):
@@ -50,8 +49,7 @@ class Posts(commands.Cog):
             return
         await ctx.send("Category `{}` successfully created".format(arg))
 
-    @commands.command(name='listcategories', usage="",
-                      brief="Lists all categories",
+    @commands.command(name='listcategories', usage="", brief="Lists all categories",
                       aliases=['listcat', 'lc', 'categories'])
     async def list_categories(self, ctx: commands.Context):
         if not is_mod(self.bot.conn, ctx):
@@ -63,8 +61,7 @@ class Posts(commands.Cog):
             message += "{}\n".format(category)
         await ctx.send(message)
 
-    @commands.command(name='removecategory', usage="name",
-                      brief="Removes a category",
+    @commands.command(name='removecategory', usage="name", brief="Removes a category",
                       aliases=['deletecategory', 'rmcat', 'yeetcat'])
     async def remove_category(self, ctx: commands.Context, *args: str):
         if not is_mod(self.bot.conn, ctx):
@@ -78,9 +75,7 @@ class Posts(commands.Cog):
         categories.remove_category(self.bot.conn, ctx.guild.id, arg)
         await ctx.send("Category `{}` successfully removed".format(arg))
 
-    @commands.command(name='settitle', usage="name",
-                      brief="Sets the title of the current post",
-                      aliases=['title'])
+    @commands.command(name='settitle', usage="name", brief="Sets the title of the current post", aliases=['title'])
     async def title(self, ctx: commands.Context, *args: str):
         if not is_mod(self.bot.conn, ctx):
             await ctx.send("You're not a mod")
@@ -93,8 +88,7 @@ class Posts(commands.Cog):
         if isinstance(error.original, KeyError):
             await ctx.send("Please, create the post first using the `new` command")
 
-    @commands.command(name='setcontent', usage="message IDs",
-                      brief="Sets the content of the post",
+    @commands.command(name='setcontent', usage="message IDs", brief="Sets the content of the post",
                       help="Accepts multiple IDs at once, they need to be in order from top to bottom",
                       aliases=['content'])
     async def content(self, ctx: commands.Context, *args: str):
@@ -118,9 +112,7 @@ class Posts(commands.Cog):
         if isinstance(error.original, KeyError):
             await ctx.send("Please, create the post first using the `new` command")
 
-    @commands.command(name='preview', usage="category",
-                      brief="previews the .md file",
-                      aliases=['sendpreview'])
+    @commands.command(name='preview', usage="category", brief="previews the .md file", aliases=['sendpreview'])
     async def preview(self, ctx: commands.Context, subtitle):
         if not is_mod(self.bot.conn, ctx):
             await ctx.send("You're not a mod")
@@ -132,12 +124,51 @@ class Posts(commands.Cog):
         title: str = self.temp_posts[ctx.guild.id][0].title
         content: str = '\n'.join([message.content for message in self.temp_posts[ctx.guild.id][1]])
         content = content.replace("\n", "  \n")
-        create_md_file(path="{}.md".format(ctx.guild.name), title=title, subtitle=subtitle, content=content)
+        create_md_file(path=".", filename="{}.md".format(ctx.guild.name), title=title, subtitle=subtitle,
+                       content=content)
         await ctx.send(file=discord.File("{}.md".format(ctx.guild.name)))
         os.remove("{}.md".format(ctx.guild.name))
 
     @preview.error
     async def preview_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please provide the category")
+        elif isinstance(error, commands.CommandInvokeError):
+            if isinstance(error.original, KeyError):
+                await ctx.send("Please, create the post first using the `new` command")
+
+    @commands.command(name='publish', usage="category", brief="Publish the post on the blog",
+                      aliases=['finish', 'submit'])
+    async def publish(self, ctx: commands.Context, subtitle):
+        if not is_mod(self.bot.conn, ctx):
+            await ctx.send("You're not a mod")
+            return
+
+        categories_list: list = categories.get_server_categories(self.bot.conn, ctx.guild.id)
+        if subtitle not in categories_list:
+            await ctx.send("Category {} does not exist".format(subtitle))
+            return
+
+        title: str = self.temp_posts[ctx.guild.id][0].title
+        content: str = '\n'.join([message.content for message in self.temp_posts[ctx.guild.id][1]])
+        content = content.replace("\n", "  \n")
+
+        try:
+            posts.add_post(self.bot.conn, ctx.guild.id, subtitle, title, subtitle, content)
+        except psycopg2.IntegrityError as err:
+            await ctx.send("Error: {}".format(err))
+            self.bot.conn.rollback()
+            return
+
+        create_md_file(path="../blog/{}/{}".format(ctx.guild.name, subtitle), filename="{}.md".format(title),
+                       title=title,
+                       subtitle=subtitle, content=content)
+
+        self.temp_posts.pop(ctx.guild.id)
+        await ctx.send("Post submitted to blog")
+
+    @publish.error
+    async def publish_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Please provide the category")
         elif isinstance(error, commands.CommandInvokeError):
