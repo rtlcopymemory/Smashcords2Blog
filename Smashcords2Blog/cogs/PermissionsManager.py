@@ -24,7 +24,7 @@ class PermissionsManager(commands.Cog):
         self.bot: Smashcords2BlogBot = bot
 
     @commands.command(name='allow', usage="<list of role names>",
-                      brief="Adds a list of mods to the mods list of this server", aliases=['add', 'addmod'])
+                      brief="Adds a list of roles to the mods list of this server", aliases=['add', 'addmod'])
     @commands.is_owner()
     async def allow(self, ctx: commands.Context):
         guild: discord.Guild = ctx.guild
@@ -47,7 +47,7 @@ class PermissionsManager(commands.Cog):
             await ctx.send("Sorry, this command is reserved for the owner only")
         print(error)
 
-    @commands.command(name='mods', usage="", brief="lists mods for this server", aliases=['showmods', 'listmods'])
+    @commands.command(name='mods', usage="", brief="lists mod roles for this server", aliases=['showmods', 'listmods'])
     async def mods(self, ctx: commands.Context):
         if not is_mod(self.bot.conn, ctx):
             await ctx.send("You're not a mod")
@@ -59,7 +59,7 @@ class PermissionsManager(commands.Cog):
         await ctx.send(message[:-2])
 
     @commands.command(name='revoke', usage="<list of role names>",
-                      brief="Removes a list of mods from the mods list of this server",
+                      brief="Removes a list of roles from the mods list of this server",
                       aliases=['remove', 'removemod', 'rmmod'])
     @commands.is_owner()
     async def revoke(self, ctx: commands.Context):
