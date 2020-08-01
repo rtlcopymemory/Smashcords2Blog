@@ -1,3 +1,4 @@
+import os
 import typing
 
 import discord
@@ -7,6 +8,13 @@ from discord.ext import commands
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
 from database import categories
+
+
+def create_md_file(path, title, subtitle, content):
+    with open(path, "w+") as f:
+        f.write("# {}\n".format(title))
+        f.write("## {}\n".format(subtitle))
+        f.write(content)
 
 
 class Posts(commands.Cog):
@@ -87,7 +95,7 @@ class Posts(commands.Cog):
 
     @commands.command(name='setcontent', usage="message IDs",
                       brief="Sets the content of the post",
-                      descrition="Accepts multiple IDs at once, they need to be in order from top to bottom",
+                      help="Accepts multiple IDs at once, they need to be in order from top to bottom",
                       aliases=['content'])
     async def content(self, ctx: commands.Context, *args: str):
         if not is_mod(self.bot.conn, ctx):
@@ -109,3 +117,29 @@ class Posts(commands.Cog):
     async def content_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
         if isinstance(error.original, KeyError):
             await ctx.send("Please, create the post first using the `new` command")
+
+    @commands.command(name='preview', usage="category",
+                      brief="previews the .md file",
+                      aliases=['sendpreview'])
+    async def preview(self, ctx: commands.Context, subtitle):
+        if not is_mod(self.bot.conn, ctx):
+            await ctx.send("You're not a mod")
+            return
+        categories_list: list = categories.get_server_categories(self.bot.conn, ctx.guild.id)
+        if subtitle not in categories_list:
+            await ctx.send("Category {} does not exist".format(subtitle))
+            return
+        title: str = self.temp_posts[ctx.guild.id][0].title
+        content: str = '\n'.join([message.content for message in self.temp_posts[ctx.guild.id][1]])
+        content = content.replace("\n", "  \n")
+        create_md_file(path="{}.md".format(ctx.guild.name), title=title, subtitle=subtitle, content=content)
+        await ctx.send(file=discord.File("{}.md".format(ctx.guild.name)))
+        os.remove("{}.md".format(ctx.guild.name))
+
+    @preview.error
+    async def preview_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Please provide the category")
+        elif isinstance(error, commands.CommandInvokeError):
+            if isinstance(error.original, KeyError):
+                await ctx.send("Please, create the post first using the `new` command")
