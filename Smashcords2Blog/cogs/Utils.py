@@ -23,7 +23,7 @@ class Utils(commands.Cog):
     async def on_guild_leave(self, guild: discord.Guild):
         server.remove_server(self.bot.conn, guild.id)
 
-    @commands.command(name='ping')
+    @commands.command(name='ping', usage="", brief="answers with a simple message", aliases=['up'])
     async def ping(self, ctx: commands.Context, *, member: discord.Member = None):
         member = member or ctx.author
         await ctx.send("<@{}> pong!".format(member.id))
