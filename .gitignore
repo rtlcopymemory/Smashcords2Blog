@@ -131,3 +131,4 @@ dmypy.json
 # Blog files
 blog/
 hugo-src/
+!hugo-src/content/_index.md
