@@ -1,3 +1,6 @@
+from typing import List
+
+
 def add_post(conn, server_id: int, category_name: str, title: str, subtitle: str, content: str):
     curr = conn.cursor()
     curr.execute(
@@ -7,11 +10,11 @@ def add_post(conn, server_id: int, category_name: str, title: str, subtitle: str
     curr.close()
 
 
-def get_server_posts(conn, server_id: int, category_name: str, title: str) -> list:
+def get_server_posts(conn, server_id: int) -> List[tuple]:
     curr = conn.cursor()
     curr.execute(
-        "SELECT serverid, catname, title FROM smashcords2blog.post WHERE serverid = %s AND catname = %s AND title = %s",
-        (server_id, category_name, title))
+        "SELECT serverid, catname, title, subtitle, content FROM smashcords2blog.post WHERE serverid = %s",
+        (server_id,))
     result = curr.fetchall()
     curr.close()
     return result

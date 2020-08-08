@@ -1,3 +1,6 @@
+from typing import List
+
+
 def get_server_from_id(conn, server_id: int):
     curr = conn.cursor()
     curr.execute("SELECT * FROM smashcords2blog.server WHERE serverid = %s", (server_id,))
@@ -22,3 +25,11 @@ def remove_server(conn, server_id: int):
     curr.execute("DELETE FROM smashcords2blog.server WHERE serverid = %s", (server_id,))
     conn.commit()
     curr.close()
+
+
+def get_servers(conn) -> List[tuple]:
+    curr = conn.cursor()
+    curr.execute("SELECT * FROM smashcords2blog.server")
+    result = curr.fetchall()
+    curr.close()
+    return result

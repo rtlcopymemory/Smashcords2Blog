@@ -8,13 +8,17 @@ from discord.ext import commands
 
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
+from config import frontmatter, owner_id, blog_path, create_hugo_config_file
 from database import categories, posts
+from database.posts import get_server_posts
+from database.server import get_servers
 
 
 def create_md_file(path, filename, title, subtitle, content):
     Path("{}".format(path)).mkdir(parents=True, exist_ok=True)
     with open("{}/{}".format(path, filename), "w+") as f:
-        f.write("# {}\n".format(title))
+        f.write(frontmatter.format(title, title.replace(" ", "-")))
+        # f.write("# {}\n".format(title))
         f.write("## {}\n".format(subtitle))
         f.write(content)
 
@@ -160,7 +164,8 @@ class Posts(commands.Cog):
             self.bot.conn.rollback()
             return
 
-        create_md_file(path="../blog/{}/{}".format(ctx.guild.name, subtitle), filename="{}.md".format(title),
+        create_md_file(path=blog_path + "{}/{}".format(ctx.guild.name, subtitle),
+                       filename="{}.md".format(title),
                        title=title,
                        subtitle=subtitle, content=content)
 
@@ -174,3 +179,22 @@ class Posts(commands.Cog):
         elif isinstance(error, commands.CommandInvokeError):
             if isinstance(error.original, KeyError):
                 await ctx.send("Please, create the post first using the `new` command")
+
+    @commands.command(name='build', usage="", brief="[BOT OWNER ONLY] Re-builds the blog from the database entries",
+                      aliases=['rebuild'])
+    async def build_from_db(self, ctx: commands.Context):
+        if not ctx.author.id == owner_id:
+            await ctx.send("You're not the owner of this bot")
+            return
+        for post in get_server_posts(self.bot.conn, ctx.guild.id):
+            create_md_file(path=blog_path + "{}/{}".format(ctx.guild.name, post[1]),
+                           filename="{}.md".format(post[2]),
+                           title=post[2],
+                           subtitle=post[1],
+                           content=post[4])
+        create_hugo_config_file(get_servers(self.bot.conn))
+        await ctx.send("Done.")
+
+    @build_from_db.error
+    async def build_from_db_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
+        await ctx.send("Something went wrong:\n```{}```".format(error))
