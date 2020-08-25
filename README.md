@@ -10,10 +10,16 @@ Not directly needed to run the bot but needed to create the static website:
 ## Install
 ```
 git clone git@github.com:WolfenCLI/Smashcords2Blog.git
-cd Smashcords2Blog/hugo-src
-hugo init
+```
+
+For each server, the hugo initialization has to be done manually (for now):
+```
+mkdir hugo-src
+hugo new site SERVER_NAME
+cd SERVER_NAME
 git submodule add https://github.com/jakewies/hugo-theme-codex.git themes/hugo-theme-codex
 ```
+
 Then the first time you'll add the bot to a server it will generate the `config.toml` file automatically.
 
 ### How to start
@@ -44,5 +50,6 @@ I personally used the following theme: [Codex](https://themes.gohugo.io/hugo-the
 To move and build the files I use a script on a crontab every 15 minutes.
 
 ## TODO
+- Generate hugo src folder on server join automatically
 - Dockerize the bot too (adding hugo-src as a volume)
 - Add a script to generate the startup script with the environment variables set
