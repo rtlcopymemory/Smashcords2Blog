@@ -24,6 +24,6 @@
   - title = VARCHAR(64)
   - subtitle = VARCHAR(128)
   - content = TEXT
-- Category
+- Role
   - serverID = NUMERIC
   - roleID = NUMERIC
