@@ -8,4 +8,4 @@ Each Discord is responsible for where to share their own link but generally you 
 
 ### I'm a Discord admin and I want my blog
 The bot is open source and everyone is free to host their own and edit the code.  
-This bot will also be hosted by the maintainer. You can find them on Discord as "Sesilaso 🐾#0929". The "official" bot is only meant for Smashcords.
+This bot will also be hosted by the maintainer. You can find them on Discord as "". The "official" bot is only meant for Smashcords.
