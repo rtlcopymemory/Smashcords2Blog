@@ -8,10 +8,9 @@ from discord.ext import commands
 
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
-from config import frontmatter, owner_id, blog_path, create_hugo_config_file
+from config import frontmatter, owner_id, blog_path, create_hugo_config_files
 from database import categories, posts
 from database.posts import get_server_posts
-from database.server import get_servers
 
 
 def create_md_file(path, filename, title, subtitle, content):
@@ -164,7 +163,7 @@ class Posts(commands.Cog):
             self.bot.conn.rollback()
             return
 
-        create_md_file(path=blog_path + "{}/{}".format(ctx.guild.name, subtitle),
+        create_md_file(path=blog_path.format(ctx.guild.name) + "{}".format(subtitle),
                        filename="{}.md".format(title),
                        title=title,
                        subtitle=subtitle, content=content)
@@ -187,12 +186,12 @@ class Posts(commands.Cog):
             await ctx.send("You're not the owner of this bot")
             return
         for post in get_server_posts(self.bot.conn, ctx.guild.id):
-            create_md_file(path=blog_path + "{}/{}".format(ctx.guild.name, post[1]),
+            create_md_file(path=blog_path.format(ctx.guild.name) + "{}".format(post[1]),
                            filename="{}.md".format(post[2]),
                            title=post[2],
                            subtitle=post[1],
                            content=post[4])
-        create_hugo_config_file(get_servers(self.bot.conn))
+        create_hugo_config_files(self.bot.conn)
         await ctx.send("Done.")
 
     @build_from_db.error

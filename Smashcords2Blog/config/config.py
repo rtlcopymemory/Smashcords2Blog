@@ -1,5 +1,7 @@
 import os
-from typing import List
+
+from database.categories import get_server_categories
+from database.server import get_servers
 
 hugo_post_frontmatter: str = """---
 title: "{}"
@@ -15,8 +17,8 @@ toc: false
 """
 
 owner_id: int = int(os.getenv("OWNER_ID"))
-hugo_root: str = "../hugo-src/"
-blog_path: str = "../hugo-src/content/"
+hugo_root: str = "../hugo-src/{}/"
+blog_path: str = "../hugo-src/{}/content/"
 
 config_toml_default: str = """\
 theme = "hugo-theme-codex" 
@@ -56,9 +58,10 @@ server_menu_template: str = """\
 """
 
 
-def create_hugo_config_file(servers: List[tuple]):
-    result: str = config_toml_default
-    for server in servers:
-        result += server_menu_template.format(server[1].lower(), server[1])
-    with open(hugo_root + "config.toml", "w+") as f:
-        f.write(result)
+def create_hugo_config_files(conn):
+    for server in get_servers(conn):
+        result: str = config_toml_default
+        for category in get_server_categories(conn, server[0]):
+            result += server_menu_template.format(category.lower(), category)
+        with open(hugo_root.format(server[1]) + "config.toml", "w+") as f:
+            f.write(result)
