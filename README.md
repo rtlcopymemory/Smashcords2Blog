@@ -12,20 +12,14 @@ Not directly needed to run the bot but needed to create the static website:
 git clone git@github.com:WolfenCLI/Smashcords2Blog.git
 ```
 
-For each server, the hugo initialization has to be done manually (for now):
-```
-mkdir hugo-src
-hugo new site SERVER_NAME
-cd SERVER_NAME
-git submodule add https://github.com/jakewies/hugo-theme-codex.git themes/hugo-theme-codex
-```
+Soon: a `make` script will generate the `start.sh` file
 
-Then the first time you'll add the bot to a server it will generate the `config.toml` file automatically.
+**This Bot requires a PostgreSQL database**, example configuration can be taken by the `docker-compose.yml` file.  
+Alternatively you can edit and use the `docker-compose.yml` file included.  
+Once the database is up, run the `database/init.sql` script to setup the neccessary schema.
 
 ### How to start
-Either use you own postgreSQL installation or use the one provided with the docker-compose.  
-If it's the first time you start the database, remember to initialize it with `database/init.sql`.  
-To start the bot, first set the following environment variables:
+To start the bot, first set the following environment variables (soon replaced with start.sh script):
 ```
 DBNAME=postgres
 DBUSER=postgres
@@ -37,19 +31,17 @@ OWNER_ID=
 ```
 I left the default values for the docker PostgreSQL included, you might want to change at least the password.
 
-## Build website
+## Build website sources
 ```
-cd hugo-src
-hugo
+./build.sh
 ```
-Now copy the content of the `public` folder in the root of your webserver.
+Now copy the content of the `public` folders to the root of your webserver.
 
 ### Deploy the blog
 This bot creates .md files to be built with hugo into a blog.  
-I personally used the following theme: [Codex](https://themes.gohugo.io/hugo-theme-codex/)  
+I personally used the following theme: [Learn](https://themes.gohugo.io/hugo-theme-learn/)  
 To move and build the files I use a script on a crontab every 15 minutes.
 
 ## TODO
-- Generate hugo src folder on server join automatically
 - Dockerize the bot too (adding hugo-src as a volume)
-- Add a script to generate the startup script with the environment variables set
+- Add a script (Makefile) to generate the startup script with the environment variables set

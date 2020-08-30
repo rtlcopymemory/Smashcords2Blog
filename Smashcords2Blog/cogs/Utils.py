@@ -39,3 +39,7 @@ class Utils(commands.Cog):
     async def ping(self, ctx: commands.Context, *, member: discord.Member = None):
         member = member or ctx.author
         await ctx.send("<@{}> pong!".format(member.id))
+
+    @commands.command(name='commands', usage="", brief="Github link to the commands list", aliases=['listcommands'])
+    async def commands(self, ctx: commands.Context, *, member: discord.Member = None):
+        await ctx.send("List of commands: <https://github.com/WolfenCLI/Smashcords2Blog/wiki/Commands>")

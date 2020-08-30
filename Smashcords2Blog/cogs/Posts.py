@@ -1,4 +1,5 @@
 import os
+import re
 import typing
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from discord.ext import commands
 
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
-from config import frontmatter, owner_id, blog_path, create_hugo_config_files
+from config import frontmatter, owner_id, blog_path
 from database import categories, posts
 from database.posts import get_server_posts
 
@@ -16,10 +17,24 @@ from database.posts import get_server_posts
 def create_md_file(path, filename, title, subtitle, content):
     Path("{}".format(path)).mkdir(parents=True, exist_ok=True)
     with open("{}/{}".format(path, filename), "w+") as f:
-        f.write(frontmatter.format(title, title.replace(" ", "-")))
-        # f.write("# {}\n".format(title))
+        f.write(frontmatter.format(title))
         f.write("## {}\n".format(subtitle))
         f.write(content)
+
+
+def create_md_image(url: str) -> str:
+    # This is not a mime check, we are not concerned about vulnerabilities since the file is not hosted
+    # on our server
+    match: re.Match = re.search(r"\.(jpg|jpeg|png|gif|bmp)$", url)
+    return "![image]({})".format(match.string) if match is not None else ""
+
+
+def content_from_msg_list(messages: typing.List[discord.Message]) -> str:
+    content_list: list = [
+        message.content + ("\n".join([create_md_image(attachment.url) for attachment in message.attachments]))
+        for message in messages]
+    content: str = '\n'.join(content_list)
+    return content.replace("\n", "  \n")
 
 
 class Posts(commands.Cog):
@@ -104,7 +119,7 @@ class Posts(commands.Cog):
                 current_tuple[1].append(await ctx.channel.fetch_message(int(messageID)))
             except Exception as e:
                 await ctx.send("Error while adding the message with ID {}\n{}".format(messageID, e))
-        embed_content = '\n'.join([str(message.jump_url) for message in self.temp_posts[ctx.guild.id][1]])
+        embed_content = '\n'.join([str(message.jump_url) for message in current_tuple[1]])
         current_tuple[0].clear_fields()
         current_tuple[0].add_field(name="content", value=embed_content)
         await ctx.send(embed=current_tuple[0])
@@ -125,8 +140,7 @@ class Posts(commands.Cog):
             await ctx.send("Category {} does not exist".format(subtitle))
             return
         title: str = self.temp_posts[ctx.guild.id][0].title
-        content: str = '\n'.join([message.content for message in self.temp_posts[ctx.guild.id][1]])
-        content = content.replace("\n", "  \n")
+        content: str = content_from_msg_list(self.temp_posts[ctx.guild.id][1])
         create_md_file(path=".", filename="{}.md".format(ctx.guild.name), title=title, subtitle=subtitle,
                        content=content)
         await ctx.send(file=discord.File("{}.md".format(ctx.guild.name)))
@@ -153,8 +167,7 @@ class Posts(commands.Cog):
             return
 
         title: str = self.temp_posts[ctx.guild.id][0].title
-        content: str = '\n'.join([message.content for message in self.temp_posts[ctx.guild.id][1]])
-        content = content.replace("\n", "  \n")
+        content: str = content_from_msg_list(self.temp_posts[ctx.guild.id][1])
 
         try:
             posts.add_post(self.bot.conn, ctx.guild.id, subtitle, title, subtitle, content)
@@ -191,7 +204,6 @@ class Posts(commands.Cog):
                            title=post[2],
                            subtitle=post[1],
                            content=post[4])
-        create_hugo_config_files(self.bot.conn)
         await ctx.send("Done.")
 
     @build_from_db.error
