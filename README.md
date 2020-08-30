@@ -45,4 +45,3 @@ To move and build the files I use a script on a crontab every 15 minutes.
 ## TODO
 - Dockerize the bot too (adding hugo-src as a volume)
 - Add a script (Makefile) to generate the startup script with the environment variables set
-- Include attachments (images) to messages
