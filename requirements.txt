@@ -17,6 +17,7 @@ pycodestyle==2.6.0
 pylint==2.5.3
 six==1.15.0
 toml==0.10.1
+typed-ast==1.4.1
 typing-extensions==3.7.4.2
 websockets==8.1
 wrapt==1.12.1
