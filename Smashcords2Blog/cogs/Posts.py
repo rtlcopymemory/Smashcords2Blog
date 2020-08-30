@@ -8,7 +8,7 @@ from discord.ext import commands
 
 from Smashcords2BlogBot import Smashcords2BlogBot
 from cogs import is_mod
-from config import frontmatter, owner_id, blog_path, create_hugo_config_files
+from config import frontmatter, owner_id, blog_path
 from database import categories, posts
 from database.posts import get_server_posts
 
@@ -16,8 +16,7 @@ from database.posts import get_server_posts
 def create_md_file(path, filename, title, subtitle, content):
     Path("{}".format(path)).mkdir(parents=True, exist_ok=True)
     with open("{}/{}".format(path, filename), "w+") as f:
-        f.write(frontmatter.format(title, title.replace(" ", "-")))
-        # f.write("# {}\n".format(title))
+        f.write(frontmatter.format(title))
         f.write("## {}\n".format(subtitle))
         f.write(content)
 
@@ -191,7 +190,6 @@ class Posts(commands.Cog):
                            title=post[2],
                            subtitle=post[1],
                            content=post[4])
-        create_hugo_config_files(self.bot.conn)
         await ctx.send("Done.")
 
     @build_from_db.error

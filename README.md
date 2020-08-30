@@ -50,6 +50,6 @@ I personally used the following theme: [Codex](https://themes.gohugo.io/hugo-the
 To move and build the files I use a script on a crontab every 15 minutes.
 
 ## TODO
-- Generate hugo src folder on server join automatically
 - Dockerize the bot too (adding hugo-src as a volume)
-- Add a script to generate the startup script with the environment variables set
+- Add a script (Makefile) to generate the startup script with the environment variables set
+- Include attachments (images) to messages
